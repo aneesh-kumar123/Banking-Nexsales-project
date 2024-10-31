@@ -12,10 +12,18 @@ module.exports = {
       sender_bank_id: {
         type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: 'banks',
+          key: 'id',
+        }
       },
       receiver_bank_id: {
         type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: 'banks',
+          key: 'id',
+        }
       },
       sender_bank_name: {
         type: Sequelize.STRING,
