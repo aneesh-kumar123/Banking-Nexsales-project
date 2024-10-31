@@ -8,14 +8,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
     
-      ledger.belongsTo(models.bank, {
-        as: "senderBank",
-        foreignKey: "sender_bank_id",
-      });
-      ledger.belongsTo(models.bank, {
-        as: "receiverBank",
-        foreignKey: "receiver_bank_id",
-      });
+      ledger.belongsTo(models.bank);
+      
     }
   }
 
