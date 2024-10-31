@@ -1,0 +1,216 @@
+{
+  "routes":[
+    
+      {
+      
+          "controller":"../components/user/controller/user.js",
+          "route":"/api/v1/user/admin",
+          "method":"post",
+          "action":"createAdmin",
+          "isAdmin":false,
+          "isUser":false
+      },
+      {
+          "controller":"../components/user/controller/user.js",
+          "route":"/api/v1/user/login",
+          "method":"post",
+          "action":"login",
+          "isAdmin":false,
+          "isUser":false
+      },
+      {
+          "controller":"../components/user/controller/user.js",
+          "route":"/api/v1/user/user",
+          "method":"post",
+          "action":"createUser",
+          "isAdmin":true,
+          "isUser":false
+
+      },
+      {
+        "controller":"../components/user/controller/user.js",
+        "route":"/api/v1/user",
+        "method":"get",
+        "action":"getAllUsers",
+        "isAdmin":true,
+        "isUser":false
+
+    },
+    {
+        "controller":"../components/user/controller/user.js",
+        "route":"/api/v1/user/:userId",
+        "method":"get",
+        "action":"getUserById",
+        "isAdmin":true,
+        "isUser":false
+
+    },
+    {
+        "controller":"../components/user/controller/user.js",
+        "route":"/api/v1/user/:userId",
+        "method":"put",
+        "action":"updateUserById",
+        "isAdmin":true,
+        "isUser":false
+
+    },
+    {
+        "controller":"../components/user/controller/user.js",
+        "route":"/api/v1/user/:userId",
+        "method":"delete",
+        "action":"deleteUserById",
+        "isAdmin":true,
+        "isUser":false
+
+    },
+
+    
+      {
+        "controller": "../components/bank/controller/user.js",
+        "route": "/api/v1/bank",
+        "method": "post",
+        "action": "createBank",
+        "isAdmin": true,
+        "isUser": false
+      },
+
+       {
+            "controller":"../components/bank/controller/user.js",
+            "route":"/api/v1/bank",
+            "method":"get",
+            "action":"getAllBanks",
+            "isAdmin":true,
+            "isUser":false
+
+        },
+        {
+            "controller":"../components/bank/controller/user.js",
+            "route":"/api/v1/bank/:bankId",
+            "method":"get",
+            "action":"getBankById",
+            "isAdmin":true,
+            "isUser":false
+
+        },
+        {
+            "controller":"../components/bank/controller/user.js",
+            "route":"/api/v1/bank/:bankId",
+            "method":"put",
+            "action":"updateBankById",
+            "isAdmin":true,
+            "isUser":false
+
+        },
+        {
+            "controller":"../components/bank/controller/user.js",
+            "route":"/api/v1/bank/:bankId",
+            "method":"delete",
+            "action":"deleteBankById",
+            "isAdmin":true,
+            "isUser":false
+
+        },
+        {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/bank/:bankId/account",
+          "method":"post",
+          "action":"createAccount",
+          "isAdmin":false,
+          "isUser":true
+
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account",
+          "method":"get",
+          "action":"getAllAccounts",
+          "isAdmin":false,
+          "isUser":true
+
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account/:accountId",
+          "method":"get",
+          "action":"getAccountById",
+          "isAdmin":false,
+          "isUser":true
+
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account/:accountId",
+          "method":"delete",
+          "action":"deleteAccountById",
+          "isAdmin":false,
+          "isUser":true
+
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account/:accountId/deposit",
+          "method":"post",
+          "action":"depositUserAccount",
+          "isAdmin":false,
+          "isUser":true
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account/:accountId/withdraw",
+          "method":"post",
+          "action":"withdrawUserAccount",
+          "isAdmin":false,
+          "isUser":true
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/account/:accountId/balance",
+          "method":"get",
+          "action":"getBalanceUserAccount",
+          "isAdmin":false,
+          "isUser":true
+      },
+      {
+          "controller":"../components/account/controller/user.js",
+          "route":"/api/v1/user/:userId/bank/:bankId/banktotalbalance",
+          "method":"get",
+          "action":"getTotalBalance",
+          "isAdmin":false,
+          "isUser":true
+      },
+      {
+        "controller": "../components/account/controller/user.js",
+        "route": "/api/v1/user/transfer/:userId/:receiverUserId/:senderAccountId/:receiverAccountId",
+        "method": "post",
+        "action": "transferBetweenUsers",
+        "isAdmin": false,
+        "isUser": true
+      },
+      
+      
+      {
+          "controller":"../components/ledger/controller/ledger.js",
+          "route":"/api/v1/ledger",
+          "method":"get",
+          "action":"getAllLedgers",
+          "isAdmin":true,
+          "isUser":false
+      },
+      {
+          "controller":"../components/ledger/controller/ledger.js",
+          "route":"/api/v1/ledger/ledgerId",
+          "method":"get",
+          "action":"getLedgerById",
+          "isAdmin":true,
+          "isUser":false
+      }
+      
+
+
+
+
+
+
+    
+  ]
+}
