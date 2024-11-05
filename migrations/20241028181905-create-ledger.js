@@ -7,7 +7,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,  // Ensure UUID is auto-generated
+        defaultValue: Sequelize.UUIDV4,  
       },
       sender_bank_id: {
         type: Sequelize.UUID,
@@ -40,17 +40,17 @@ module.exports = {
       last_updated: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,  // Auto-update on creation
+        defaultValue: Sequelize.NOW,  
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,  // Default value to avoid null issues
+        defaultValue: Sequelize.NOW,  
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,  // Default value to ensure timestamps
+        defaultValue: Sequelize.NOW, 
       },
       deleted_at: {
         type: Sequelize.DATE,
