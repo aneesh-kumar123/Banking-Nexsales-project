@@ -284,8 +284,8 @@ class AccountService {
         throw new NotFoundError(`account with id ${accountId} does not exist.`);
       }
 
-      const withdrawAmount = new Decimal(amount); // Convert to Decimal
-      const currentBalance = new Decimal(account.balance); // Ensure account balance is Decimal
+      const withdrawAmount = new Decimal(amount); 
+      const currentBalance = new Decimal(account.balance); 
       console.log("current Balance:", currentBalance)
 
       if (currentBalance.minus(withdrawAmount).lessThan(1000)) {
@@ -293,7 +293,7 @@ class AccountService {
       }
 
       // Update the balance
-      const newBalance = currentBalance.minus(withdrawAmount); // Accurate addition with Decimal
+      const newBalance = currentBalance.minus(withdrawAmount); 
 
       // Save updated balance
       account.balance = newBalance.toFixed(2);
@@ -546,21 +546,21 @@ class AccountService {
       });
       
   
-      // Create the ledger entry for the sender to receiver transfer
+      //  sender to receiver transfer
       await ledgerConfig.model.create(
         {
-          id: createUUID(), // Assign a UUID to the ledger entry
+          id: createUUID(), 
           senderBankId,
           receiverBankId,
           senderBankName,
           receiverBankName,
-          totalAmount: -amount, // Negative amount for debit from sender
+          totalAmount: -amount, 
           lastUpdated: new Date(),
         },
         { transaction: t }
       );
   
-      // Create the ledger entry for the reverse direction (receiver to sender)
+      //  (receiver to sender)
       await ledgerConfig.model.create(
         {
           id: createUUID(), 
@@ -574,12 +574,12 @@ class AccountService {
         { transaction: t }
       );
   
-      await commit(t); // Commit the transaction
+      await commit(t); 
       Logger.info("Ledger entry service ended successfully.");
     } catch (error) {
-      await rollBack(t); // Rollback in case of error
+      await rollBack(t); 
       Logger.error(error);
-      throw error; // Propagate the error
+      throw error; 
     }
   }
   
