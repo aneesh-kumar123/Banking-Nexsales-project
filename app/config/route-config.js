@@ -1,4 +1,8 @@
-const { verifyAdmin, verifyUser } = require("../middleware/authService");
+const {
+  verifyAdmin,
+  verifyUser,
+  verifyUserID,
+} = require("../middleware/authService");
 
 class RouteConfig {
   constructor() {}
@@ -21,6 +25,7 @@ class RouteConfig {
 
   loadController(routeItem) {
     let controller;
+    // console.log("routeItem here ", routeItem);
 
     if (!routeItem || !routeItem.controller) {
       throw new Error(
@@ -97,6 +102,10 @@ class RouteConfig {
     return false;
   }
 
+  getVerifyUserId(routeItem) {
+    return routeItem.verifyUserId;
+  }
+
   registerRoute(
     application,
     controller,
@@ -105,7 +114,8 @@ class RouteConfig {
     action,
     secured,
     isAdmin,
-    isUser
+    isUser,
+    verifyUserId
   ) {
     // if (secured) {
     //   application.route(route)[method]((req, res, next) => {
@@ -116,12 +126,18 @@ class RouteConfig {
       application.route(route)[method]((req, res, next) => {
         verifyAdmin(req, res, next);
       });
-    }
-    else if (isUser === true) {
+    } else if (isUser === true) {
       application.route(route)[method]((req, res, next) => {
         verifyUser(req, res, next);
       });
     }
+
+    if (verifyUserId) {
+      application.route(route)[method]((req, res, next) => {
+        verifyUserID(req, res, next);
+      });
+    }
+
     application.route(route)[method]((req, res, next) => {
       controller[action](req, res, next);
     });
@@ -145,6 +161,7 @@ class RouteConfig {
       const secured = this.getSecured(routeItem);
       const isAdmin = this.getIsAdmin(routeItem);
       const isUser = this.getIsUser(routeItem);
+      const verifyUserId = this.getVerifyUserId(routeItem);
 
       this.registerRoute(
         application,
@@ -154,7 +171,8 @@ class RouteConfig {
         action,
         secured,
         isAdmin,
-        isUser
+        isUser,
+        verifyUserId
       );
     }
   }

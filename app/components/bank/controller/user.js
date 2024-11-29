@@ -42,10 +42,18 @@ class BankController {
   async getAllBanks(req, res, next) {
     try {
       Logger.info("get all banks controller started...");
+      console.log("the query we got here is:",req.query)
+      console.log("the query we got ")
+
       const { count, rows } = await this.bankService.getAllBanks(req.query);
+      // console.log("thre response we got here is:",rows)
+      console.log("thre count we got here is:",count)
       setXTotalCountHeader(res, count);
       Logger.info("get all banks controller ended...");
-      res.status(HttpStatusCode.Ok).json(rows);
+      res.status(HttpStatusCode.Ok).json( {
+        data: rows,
+        total: count,
+      });
     } catch (error) {
       next(error);
     }

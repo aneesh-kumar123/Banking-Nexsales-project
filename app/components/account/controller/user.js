@@ -56,7 +56,10 @@ class AccountController {
         req.query
       );
       setXTotalCountHeader(res, count);
-      res.status(HttpStatusCode.Ok).json(rows);
+      res.status(HttpStatusCode.Ok).json({
+        data: rows,
+        total: count,
+      });
     } catch (error) {
       next(error);
     }
@@ -237,13 +240,12 @@ class AccountController {
     try {
       Logger.info("Transfer between users controller started...");
   
-      const { userId, receiverUserId, senderAccountId, receiverAccountId } = req.params;
-      const { amount } = req.body;
+      const { userId, senderAccountId } = req.params;
+      const {receiverAccountId, amount } = req.body;
   
       // Call the service function to execute the transfer
       const response = await this.accountService.transferBetweenUsers(
         userId,
-        receiverUserId,
         senderAccountId,
         receiverAccountId,
         amount

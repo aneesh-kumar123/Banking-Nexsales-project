@@ -1,10 +1,21 @@
 const userConfig = require("../../../model-config/user-config.js");
 const Logger = require("../../../utils/logger.js");
 const bcrypt = require("bcrypt");
+const kycConfig = require("../../../model-config/kyc-config");
+const sendEmail = require("../../../utils/email");
+const { createUUID } = require("../../../utils/uuid");
 const NotFoundError = require("../../../errors/notFoundError.js");
+const {
+  transaction,
+  rollBack,
+  commit,
+} = require("../../../utils/transaction.js");
 const accountConfig = require("../../../model-config/account-config.js");
-const {parseLimitAndOffset,parseFilterQueries,parseSelectFields,} = require("../../../utils/request.js");
-const {transaction,rollBack, commit,} = require("../../../utils/transaction.js");
+const {
+  parseLimitAndOffset,
+  parseFilterQueries,
+  parseSelectFields,
+} = require("../../../utils/request.js");
 
 class UserService {
   #associationMap = {
@@ -12,6 +23,10 @@ class UserService {
       model: accountConfig.model,
       required: true,
     },
+    kyc :{
+      model:kycConfig.model,
+      required:true
+  }
   };
   #createAssociations(includeQuery) {
     const associations = [];
@@ -22,6 +37,9 @@ class UserService {
     if (includeQuery?.includes(userConfig.association.account)) {
       associations.push(this.#associationMap.account);
     }
+    if(includeQuery?.includes(userConfig.association.kyc)){
+      associations.push(this.#associationMap.kyc);
+  }
     return associations;
   }
 
@@ -46,17 +64,29 @@ class UserService {
     }
   }
 
-  async createUser( id, firstName, lastName, username,password,age,isAdmin,t ) {
-    Logger.info("create user service started...");
+  async createUser(
+    id,
+    firstName,
+    lastName,
+    username,
+    password,
+    email,
+    dateOfBirth,
+    kycStatus,
+    isAdmin,
+    t
+  ) {
     if (!t) {
       t = await transaction();
     }
 
     try {
+      Logger.info("create user service started...");
+
       let fullName = firstName + " " + lastName;
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log(`password ${hashedPassword}`);
+
       let response = await userConfig.model.create(
         {
           id,
@@ -65,12 +95,20 @@ class UserService {
           fullName,
           username,
           password: hashedPassword,
-          age,
+          email,
+          dateOfBirth,
+          kycStatus,
           isAdmin,
         },
         { t }
       );
-      commit(t);
+      console.log("hello word");
+      if(!isAdmin){
+        await kycConfig.model.create({id:createUUID(),userId:id},{transaction:t});}
+      
+      // Logger.info("create user service ended...");
+      await sendEmail(email,"Registration successful",`Hi ${firstName}! your registration has been successful. you username is - ${username} and password is - ${password}. please visit localhost:3000 to login.`)
+      await commit(t);
       Logger.info("create user service ended...");
       return response;
     } catch (error) {
@@ -79,7 +117,7 @@ class UserService {
     }
   }
 
-  //getAllUsers
+
   async getAllUsers(query, t) {
     if (!t) {
       t = await transaction();
@@ -173,6 +211,54 @@ class UserService {
       commit(t);
       Logger.info("update user by id service ended...");
       return user;
+    } catch (error) {
+      await rollBack(t);
+      Logger.error(error);
+      throw error;
+    }
+
+    // try {
+    //   Logger.info("update user by id service called...");
+
+    //   if (!userConfig.model.rawAttributes.hasOwnProperty(parameter)) {
+    //     throw new Error(
+    //       `Invalid paramter : ${parameter} does not exists in the user model...`
+    //     );
+    //   }
+    //   const updateObject = { [parameter]: value };
+
+    //   const [rowsUpdated] = await userConfig.model.update(updateObject, {
+    //     where: { id: userId },
+    //     transaction: t,
+    //   });
+
+    //   if (rowsUpdated === 0)
+    //     throw new NotFoundError(`User with id ${userId} does not exists...`);
+
+    //   commit(t);
+    //   Logger.info("update user by id service ended...");
+    //   return rowsUpdated;
+    // } catch (error) {
+    //   await rollBack(t);
+    //   Logger.error(error);
+    // }
+  }
+
+  async updateKycStatus(userId, statusMessage, t) {
+    if (!t) {
+      t = await transaction();
+    }
+    try {
+      Logger.info("Update KYC Status service started...");
+      const user = await userConfig.model.findByPk(userId, { transaction: t });
+
+      if (!user) {
+        throw new NotFoundError(`User with id ${userId} does not exist.`);
+      }
+      user.kycStatus = statusMessage;
+      await user.save({ transaction: t });
+      commit(t);
+      Logger.info("Update KYC Status service ended...");
     } catch (error) {
       await rollBack(t);
       Logger.error(error);

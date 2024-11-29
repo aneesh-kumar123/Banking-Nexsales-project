@@ -32,7 +32,9 @@ const parseSelectFields = (queryParams, allowedFields) => {
 const parseLimitAndOffset = (query) => {
   let limit = query.limit;
   let page = query.page;
-
+  console.log("hello",limit)
+  console.log("hsddgshdgajgdjas");
+  
   if (limit === undefined) return;
   if (page === undefined) {
     page = 1;
@@ -46,6 +48,14 @@ const parseLimitAndOffset = (query) => {
   if (!isPositiveInteger(page)) {
     throw new errors.BadRequest("Page should be a valid positive integer");
   }
+
+  let offset = (page - 1) * limit
+
+    return {
+        limit: limit,
+        offset: offset,
+        page : page
+    }
 };
 
 /**
@@ -57,6 +67,8 @@ const parseLimitAndOffset = (query) => {
  */
 const parseFilterQueries = (queryParams, filters, where = {}) => {
   // If queryParams is falsy, return the existing 'where' object as is
+  console.log("the queryParams is ", queryParams);
+  console.log("the filters is ", filters);
   if (!queryParams) {
     return { where };
   }

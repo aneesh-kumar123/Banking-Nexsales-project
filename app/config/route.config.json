@@ -8,7 +8,8 @@
           "method":"post",
           "action":"createAdmin",
           "isAdmin":false,
-          "isUser":false
+          "isUser":false,
+          "verifyUserId":false
       },
       {
           "controller":"../components/user/controller/user.js",
@@ -16,7 +17,8 @@
           "method":"post",
           "action":"login",
           "isAdmin":false,
-          "isUser":false
+          "isUser":false,
+          "verifyUserId":false
       },
       {
           "controller":"../components/user/controller/user.js",
@@ -24,16 +26,19 @@
           "method":"post",
           "action":"createUser",
           "isAdmin":true,
-          "isUser":false
+          "isUser":false,
+          "verifyUserId":false
 
       },
+
       {
         "controller":"../components/user/controller/user.js",
         "route":"/api/v1/user",
         "method":"get",
         "action":"getAllUsers",
         "isAdmin":true,
-        "isUser":false
+        "isUser":false,
+        "verifyUserId":false
 
     },
     {
@@ -41,8 +46,9 @@
         "route":"/api/v1/user/:userId",
         "method":"get",
         "action":"getUserById",
-        "isAdmin":true,
-        "isUser":false
+        "isAdmin":false,
+        "isUser":false,
+        "verifyUserId":false
 
     },
     {
@@ -51,7 +57,8 @@
         "method":"put",
         "action":"updateUserById",
         "isAdmin":true,
-        "isUser":false
+        "isUser":false,
+        "verifyUserId":false
 
     },
     {
@@ -60,7 +67,8 @@
         "method":"delete",
         "action":"deleteUserById",
         "isAdmin":true,
-        "isUser":false
+        "isUser":false,
+        "verifyUserId":false
 
     },
 
@@ -71,7 +79,8 @@
         "method": "post",
         "action": "createBank",
         "isAdmin": true,
-        "isUser": false
+        "isUser": false,
+        "verifyUserId":false
       },
 
        {
@@ -80,16 +89,19 @@
             "method":"get",
             "action":"getAllBanks",
             "isAdmin":true,
-            "isUser":false
+            "isUser":false,
+            "verifyUserId":false
 
         },
+
         {
             "controller":"../components/bank/controller/user.js",
             "route":"/api/v1/bank/:bankId",
             "method":"get",
             "action":"getBankById",
             "isAdmin":true,
-            "isUser":false
+            "isUser":false,
+            "verifyUserId":false
 
         },
         {
@@ -98,7 +110,8 @@
             "method":"put",
             "action":"updateBankById",
             "isAdmin":true,
-            "isUser":false
+            "isUser":false,
+            "verifyUserId":false
 
         },
         {
@@ -107,7 +120,8 @@
             "method":"delete",
             "action":"deleteBankById",
             "isAdmin":true,
-            "isUser":false
+            "isUser":false,
+            "verifyUserId":false
 
         },
         {
@@ -116,7 +130,8 @@
           "method":"post",
           "action":"createAccount",
           "isAdmin":false,
-          "isUser":true
+          "isUser":true,
+          "verifyUserId":true
 
       },
       {
@@ -125,7 +140,8 @@
           "method":"get",
           "action":"getAllAccounts",
           "isAdmin":false,
-          "isUser":true
+          "isUser":true,
+          "verifyUserId":false
 
       },
       {
@@ -134,7 +150,8 @@
           "method":"get",
           "action":"getAccountById",
           "isAdmin":false,
-          "isUser":true
+          "isUser":true,
+          "verifyUserId":true
 
       },
       {
@@ -143,7 +160,8 @@
           "method":"delete",
           "action":"deleteAccountById",
           "isAdmin":false,
-          "isUser":true
+          "isUser":true,
+          "verifyUserId":true
 
       },
       {
@@ -152,7 +170,9 @@
           "method":"post",
           "action":"depositUserAccount",
           "isAdmin":false,
-          "isUser":true
+          "isUser":true,
+          "verifyUserId":true
+
       },
       {
           "controller":"../components/account/controller/user.js",
@@ -180,7 +200,7 @@
       },
       {
         "controller": "../components/account/controller/user.js",
-        "route": "/api/v1/user/transfer/:userId/:receiverUserId/:senderAccountId/:receiverAccountId",
+        "route": "/api/v1/user/:userId/account/:senderAccountId/transfer",
         "method": "post",
         "action": "transferBetweenUsers",
         "isAdmin": false,
@@ -194,16 +214,71 @@
           "method":"get",
           "action":"getAllLedgers",
           "isAdmin":true,
-          "isUser":false
+          "isUser":false,
+          "verifyUserId":false
       },
       {
           "controller":"../components/ledger/controller/ledger.js",
-          "route":"/api/v1/ledger/ledgerId",
+          "route":"/api/v1/ledger/:ledgerId",
           "method":"get",
           "action":"getLedgerById",
           "isAdmin":true,
-          "isUser":false
-      }
+          "isUser":false,
+          "verifyUserId":false
+      },
+
+      {
+        "controller":"../components/passbook/controller/passbook.js",
+        "route":"/api/v1/passbook/user/:userId/account/:accounId",
+        "method":"get",
+        "action":"viewPassbook",
+        "isAdmin":false,
+        "isUser":true,
+        "verifyUserId":true
+    },
+  
+    {
+        "controller": "../components/kyc/controller/kyc.js",
+        "route": "/api/v1/user/:userId/kyc",
+        "method": "get",
+        "action": "getUserKYC",
+       
+        "isAdmin" : false,
+        "isUser" : true,
+        "verifyUserId":false
+    },
+    {
+        "controller": "../components/kyc/controller/kyc.js",
+        "route": "/api/v1/user/:userId/kyc",
+        "method": "put",
+        "action": "submitKYC",
+        
+        "isAdmin" : false,
+        "isUser" : true,
+        "verifyUserId":false
+    },
+    {
+        "controller": "../components/kyc/controller/kyc.js",
+        "route": "/api/v1/kyc-request",
+        "method": "get",
+        "action": "getSubmittedKYCs",
+       
+        "isAdmin" : true,
+        "isUser" : false,
+        "verifyUserId":false
+    },
+    {
+        "controller": "../components/kyc/controller/kyc.js",
+        "route": "/api/v1/kyc-request",
+        "method": "put",
+        "action": "updateKYCStatus",
+        
+        "isAdmin" : true,
+        "isUser" : false,
+        "verifyUserId":false
+    }
+    
+
       
 
 

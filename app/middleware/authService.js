@@ -5,12 +5,14 @@ const secreteKey = "aneesh@123";  //i will use dodenv after some time
 const verifyAdmin = (req, res, next) => {
   try {
     Logger.info("verifying admin started...");
-    // console.log("cookies", req.cookies["auth"]);
+    console.log("cookies:", req.cookies["auth"]);
+    console.log("Headers:",req.headers["auth"]);
+
     if (!req.cookies["auth"] && !req.headers["auth"]) {
       throw new UnAuthorizedError("Cookie Not Found...");
     }
 
-    let token = req.cookies["auth"].split(" ")[2];
+    let token = req.headers["auth"].split(" ")[2];
     let payload = Payload.verifyToken(token);
     if (!payload.isAdmin) throw new UnAuthorizedError("Unauthorized access...");
 
@@ -36,7 +38,8 @@ const verifyUser = (req, res, next) => {
 
     // console.log("its ok")
 
-    let token = req.cookies["auth"].split(" ")[2];
+    let token = req.headers["auth"].split(" ")[2];
+    console.log("token is:=",token)
     let payload = Payload.verifyToken(token);
     if (payload.isAdmin)
       throw new UnAuthorizedError(
@@ -53,6 +56,24 @@ const verifyUser = (req, res, next) => {
 
     Logger.info("Verifying ended...");
     Logger.info("next called");
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const verifyUserID = (req, res, next) => {
+  try {
+
+    const { userId } = req.params;
+    const id = req.userId;
+    console.log("here", id);
+    console.log("userId", userId);
+    if (userId != id)
+      throw new UnAuthorizedError(
+        "You are not authorized to access this account..."
+      );
     next();
   } catch (error) {
     next(error);
@@ -98,4 +119,4 @@ class Payload {
   }
 }
 
-module.exports = { newPayload, verifyAdmin, verifyUser };
+module.exports = { newPayload, verifyAdmin, verifyUser,verifyUserID  };

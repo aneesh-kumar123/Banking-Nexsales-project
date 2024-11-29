@@ -411,193 +411,139 @@ class AccountService {
 
   
 
-  async transferBetweenUsers(
-    senderUserId,
-    receiverUserId,
-    senderAccountId,
-    receiverAccountId,
-    amount,
-    t
-  ) {
-    if (!t) t = await transaction();
-
+  async transferBetweenUsers(senderUserId, senderAccountId, receiverAccountId, amount) {
+    const t = await transaction(); // Start the transaction here
     try {
       Logger.info("Transfer between users started...");
-      console.log("senderuserId:",senderUserId)
-      console.log("receiveruserId:",receiverUserId)
-      console.log("senderAccountId:",senderAccountId)
-      console.log("receiverAccountId:",receiverAccountId)
-
-      // Fetch users
-      const [senderUser, receiverUser] = await Promise.all([
-        userConfig.model.findOne({
-          where: {
-            id: senderUserId,
-          },
-        }, { transaction: t }),
-        userConfig.model.findOne({
-          where: {
-            id: receiverUserId,
-          },
-        }, { transaction: t }),
-      ]);
-
-
-
-      if (!senderUser || !receiverUser)
-        throw new NotFoundError("One or both users do not exist.");
-
-      // Fetch accounts
+  
+      // Fetch sender and receiver accounts
       const [senderAccount, receiverAccount] = await Promise.all([
-        accountConfig.model.findOne({
-          where: {
-            id: senderAccountId,
-          },
-        }, { transaction: t }),
-        accountConfig.model.findOne({
-          where: {
-            id: receiverAccountId,
-          },
-        }, { transaction: t }),
+        accountConfig.model.findOne({ where: { id: senderAccountId }, transaction: t }),
+        accountConfig.model.findOne({ where: { id: receiverAccountId }, transaction: t }),
       ]);
-
-      if (!senderAccount || !receiverAccount)
-        throw new NotFoundError("One or both accounts do not exist.");
-
-      const transferAmount = new Decimal(amount);
-      const senderBalance = new Decimal(senderAccount.balance);
-
-      // Ensure sufficient balance after transfer
-      if (senderBalance.minus(transferAmount).lessThan(1000)) {
-        throw new badRequest("Insufficient balance. Maintain a minimum of 1000.");
+  
+      if (!senderAccount || !receiverAccount) {
+        throw new Error("One or both accounts do not exist.");
       }
-
+  
+      // Check balance
+      const transferAmount = new Decimal(amount);
+      if (new Decimal(senderAccount.balance).minus(transferAmount).lessThan(1000)) {
+        throw new Error("Insufficient balance. Maintain a minimum of 1000.");
+      }
+  
       // Update balances
-      senderAccount.balance = senderBalance.minus(transferAmount).toFixed(2);
-      receiverAccount.balance = new Decimal(receiverAccount.balance)
-        .plus(transferAmount)
-        .toFixed(2);
-
-      // Save the updated balances
+      senderAccount.balance = new Decimal(senderAccount.balance).minus(transferAmount).toFixed(2);
+      receiverAccount.balance = new Decimal(receiverAccount.balance).plus(transferAmount).toFixed(2);
+  
       await Promise.all([
         senderAccount.save({ transaction: t }),
         receiverAccount.save({ transaction: t }),
       ]);
-
+  
       // Add passbook entries
-      await this.#addPassbookEntry(createUUID(),
-        senderAccountId, "transfer-out", transferAmount.toFixed(2), senderAccount.balance, t
-      );
-      await this.#addPassbookEntry(
-        createUUID(),
-        receiverAccountId, "transfer-in", transferAmount.toFixed(2), receiverAccount.balance, t
-      );
-
-      // Add ledger entry if accounts belong to different banks
-      if (senderAccount.bankId !== receiverAccount.bankId) {
-        const [senderBank, receiverBank] = await Promise.all([
-          bankConfig.model.findByPk(senderAccount.bankId, { transaction: t }),
-          bankConfig.model.findByPk(receiverAccount.bankId, { transaction: t }),
-        ]);
-
-        console.log("the sender Bank is:",senderBank)
-        console.log("the receiver Bank is:",receiverBank)
-        console.log("the bank id is:",senderBank.id)
-        console.log("the bank id is:",receiverBank.id)
-
-
-        await this.ledgerEntry(
-          senderBank.id, receiverBank.id, senderBank.bankName, receiverBank.bankName, amount, t
-        );
-      }
-
-      await commit(t);
+      await this.#addPassbookEntry(createUUID(), senderAccountId,receiverAccountId, "transfer-out", transferAmount, senderAccount.balance, t);
+      await this.#addPassbookEntry(createUUID(), receiverAccountId,senderAccountId, "transfer-in", transferAmount, receiverAccount.balance, t);
+  
+      // Add ledger entry
+      await this.ledgerEntry(senderAccount.bankId, receiverAccount.bankId, senderAccount.bankName, receiverAccount.bankName, transferAmount, t);
+  
+      await t.commit(); // Commit transaction only once at the end
       Logger.info("Transfer between users completed successfully.");
-
-      return {
-        senderBalance: senderAccount.balance,
-        receiverBalance: receiverAccount.balance,
-      };
+      return { senderBalance: senderAccount.balance, receiverBalance: receiverAccount.balance };
     } catch (error) {
-      await rollBack(t);
-      Logger.error(error);
+      await t.rollback(); // Rollback transaction on error
+      Logger.error("Error during transfer:", error);
       throw error;
     }
   }
+  
+  
 
 
 
 
  
 
-  async  ledgerEntry(senderBankId, receiverBankId, senderBankName, receiverBankName, amount, t) {
-    if (!t) {
-      t = await transaction();
-    }
-  
+  async ledgerEntry(senderBankId, receiverBankId, senderBankName, receiverBankName, amount, t) {
     try {
       Logger.info("Ledger entry service started...");
-      console.log('Ledger entry data:', {
-        senderBankId,
-        receiverBankId,
-        senderBankName,
-        receiverBankName,
-        amount,
-      });
-      
   
-      //  sender to receiver transfer
-      await ledgerConfig.model.create(
-        {
-          id: createUUID(), 
+      // Handle sender-to-receiver ledger entry
+      const senderToReceiverLedger = await ledgerConfig.model.findOne({
+        where: { senderBankId, receiverBankId },
+        transaction: t,
+      });
+  
+      if (senderToReceiverLedger) {
+        senderToReceiverLedger.totalAmount = new Decimal(senderToReceiverLedger.totalAmount).minus(amount).toFixed(2);
+        senderToReceiverLedger.lastUpdated = new Date();
+        await senderToReceiverLedger.save({ transaction: t });
+      } else {
+        await ledgerConfig.model.create({
           senderBankId,
           receiverBankId,
           senderBankName,
           receiverBankName,
-          totalAmount: -amount, 
+          totalAmount: -amount,
           lastUpdated: new Date(),
-        },
-        { transaction: t }
-      );
+        }, { transaction: t });
+      }
   
-      //  (receiver to sender)
-      await ledgerConfig.model.create(
-        {
-          id: createUUID(), 
+      // Handle receiver-to-sender ledger entry
+      const receiverToSenderLedger = await ledgerConfig.model.findOne({
+        where: { senderBankId: receiverBankId, receiverBankId: senderBankId },
+        transaction: t,
+      });
+  
+      if (receiverToSenderLedger) {
+        receiverToSenderLedger.totalAmount = new Decimal(receiverToSenderLedger.totalAmount).plus(amount).toFixed(2);
+        receiverToSenderLedger.lastUpdated = new Date();
+        await receiverToSenderLedger.save({ transaction: t });
+      } else {
+        await ledgerConfig.model.create({
           senderBankId: receiverBankId,
           receiverBankId: senderBankId,
           senderBankName: receiverBankName,
           receiverBankName: senderBankName,
-          totalAmount: amount, 
+          totalAmount: amount,
           lastUpdated: new Date(),
-        },
-        { transaction: t }
-      );
+        }, { transaction: t });
+      }
   
-      await commit(t); 
-      Logger.info("Ledger entry service ended successfully.");
+      Logger.info("Ledger entry service completed.");
     } catch (error) {
-      await rollBack(t); 
-      Logger.error(error);
-      throw error; 
+      Logger.error("Error in ledger entry:", error);
+      throw error;
     }
   }
   
+  
+  
 
   
   
 
 
-  async #addPassbookEntry(id, accountId, transactionType, amount, balanceAfter, t) {
-    const passbookEntry = {
-      id,
-      accountId,
-      transactionType,
-      amount,
-      balanceAfter,
-    };
-    await passbookConfig.model.create(passbookEntry, { transaction: t });
+  async #addPassbookEntry(id, accountId,recipientAccountId=null, transactionType, amount, balanceAfter, t) {
+    try {
+      const passbookEntry = {
+        id,
+        accountId,
+        recipientAccountId,
+        transactionType,
+        amount,
+        balanceAfter,
+      };
+      await passbookConfig.model.create(passbookEntry, { transaction: t });
+      Logger.info(`Passbook entry added successfully for accountId: ${accountId}`);
+    } catch (error) {
+      Logger.error("Error adding passbook entry:", error);
+      throw error;
+    }
   }
+  
+  
 
 
 

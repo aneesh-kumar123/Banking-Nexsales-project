@@ -1,51 +1,37 @@
-"use strict";
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("users", {
+    await queryInterface.createTable('kycs', {
       id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
       },
-      username: {
-        type: Sequelize.STRING,
+      user_id: {
+        type: Sequelize.UUID,
         allowNull: false,
         unique: true,
+        references: {
+          model: "users",
+          key: "id",
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      password: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      first_name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      last_name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      full_name: {
-        allowNull: false,
+      aadhar: {
         type: Sequelize.STRING,
       },
-      date_of_birth: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
-      },
-      kyc_status: {
+      pan: {
         type: Sequelize.STRING,
-        allowNull: false,
       },
-      is_admin: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
+      status: {
+        type: Sequelize.STRING,
+        defaultValue: 'not submitted',
       },
-
+      admin_note: {
+        type: Sequelize.STRING,
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -61,6 +47,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("users");
+    await queryInterface.dropTable('kycs');
   },
 };

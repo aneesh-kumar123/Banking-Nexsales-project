@@ -1,14 +1,18 @@
 const { HttpStatusCode } = require("axios");
+
 const UserService = require("../service/user");
 const { createUUID, validateUUID } = require("../../../utils/uuid.js");
 const { setXTotalCountHeader } = require("../../../utils/response.js");
 const Logger = require("../../../utils/logger.js");
 const badRequest = require("../../../errors/badRequest.js");
+const NotFoundError = require("../../../errors/notFoundError.js");
 const bcrypt = require("bcrypt");
 
 const {
   validateFirstName,
   validateLastName,
+  validateEmail,
+  validateDob,
   validateAge,
   validateParameter
 } = require("../../../utils/validations.js");
@@ -23,6 +27,8 @@ class UserController {
     try {
       Logger.info("Login controller started");
       const { username, password } = req.body;
+      // console.log("username",username);
+      // console.log("password",password);
       if (typeof username != "string")
         throw new badRequest("invalid username type");
       if (typeof password != "string")
@@ -37,8 +43,11 @@ class UserController {
         // console.log("user id is",user.id)
         let token = payload.signPayload();
         res.cookie("auth", `Bearer ${token}`);
-
         res.set("auth", `Bearer ${token}`);
+        // console.log("cookies:-",req.cookie["auth"]);
+        // console.log("headers:-",req.headers["auth"]);
+        console.log("this is token",token)
+        
         res.status(200).send(token);
       } else {
         res.status(403).json({
@@ -54,11 +63,13 @@ class UserController {
   //create Admin
   async createAdmin(req, res, next) {
     try {
-      Logger.info("Create user controller started...");
-      const { firstName, lastName, username, password, age } = req.body;
+      Logger.info("Create admin controller started...");
+      const { firstName, lastName, username, password, email, dob } = req.body;
       validateFirstName(firstName);
       validateLastName(lastName);
-      validateAge(age);
+      validateEmail(email);
+      validateDob(dob);
+
       if (firstName === lastName)
         throw new badRequest("first name and last name cannot be same...");
       if (typeof username != "string")
@@ -66,43 +77,65 @@ class UserController {
       if (typeof password != "string")
         throw new badRequest("invalid password type");
 
+      let id = createUUID();
+      let kycStatus = "Not done";
       let response = await this.userService.createUser(
-        createUUID(),
+        id,
         firstName,
         lastName,
         username,
         password,
-        age,
+        email,
+        dob,
+        kycStatus,
         true
       );
-      Logger.info("Create user controller ended...");
+      Logger.info("Create admin controller ended...");
       res.status(HttpStatusCode.Created).json(response);
     } catch (error) {
       next(error);
     }
   }
 
-  //create user
   async createUser(req, res, next) {
     try {
       Logger.info("Create user controller started...");
 
-      const { firstName, lastName, age, username, password } = req.body;
+      const { firstName, lastName, username, password, email, dateOfBirth } = req.body;
+      // console.log("user data", req.body);
       validateFirstName(firstName);
       validateLastName(lastName);
-      validateAge(age);
+      validateEmail(email);
+      validateDob(dateOfBirth);
+      // {
+      //   "firstName": "John",
+      //   "lastName": "Doe",
+      //   "username": "john_doe",
+      //   "password": "securepassword123",
+      //   "email": "john.doe@example.com",
+      //   "dob": "2000-05-15"
+      // }
+
+     
+
+      
+
       if (typeof username != "string")
         throw new badRequest("invalid username type");
       if (typeof password != "string")
         throw new badRequest("invalid password type");
 
+      let id = createUUID();
+      let kycStatus = "Not done";
       let response = await this.userService.createUser(
-        createUUID(),
+        id,
         firstName,
         lastName,
         username,
         password,
-        age,
+        email,
+        dateOfBirth,
+        kycStatus,
         false
       );
       Logger.info("Create user controller ended...");
@@ -118,7 +151,13 @@ class UserController {
       Logger.info("getAll users controller called...");
       const { count, rows } = await this.userService.getAllUsers(req.query);
       setXTotalCountHeader(res, count);
-      res.status(HttpStatusCode.Ok).json(rows);
+      // console.log("total count", count);
+      
+      
+      res.status(HttpStatusCode.Ok).json({
+        data: rows,
+        total: count,
+      });
     } catch (error) {
       next(error);
     }
@@ -170,6 +209,21 @@ class UserController {
       res
         .status(HttpStatusCode.Ok)
         .json({ message: `User with id ${userId} is updated successfully` });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateKycStatus(req, res, next) {
+    try {
+      Logger.info("Update KYC Status controller started...");
+      const { userId, statusMessage } = req.body;
+      await this.userService.updateKycStatus(userId, statusMessage);
+      res.status(HttpStatusCode.Ok).json({
+        message: `User with user id ${userId} KYC status is updated successfully to ${statusMessage}`,
+      });
+
+      Logger.info("Update KYC Status controller ended...");
     } catch (error) {
       next(error);
     }

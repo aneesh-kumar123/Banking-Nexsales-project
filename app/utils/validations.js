@@ -11,7 +11,37 @@ const validateLastName = (lastName) => {
     throw new badRequest("lastName type is not string");
 };
 
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation regex
+  if (!email || typeof email !== "string" || !emailRegex.test(email)) {
+    throw new badRequest("Email is invalid or empty.");
+  }
+};
+
+// Validate date of birth (dob)
+const validateDob = (dob) => {
+  console.log("dob is ", dob);
+  if (!dob) {
+    throw new badRequest("Date of birth is required.");
+  }
+  const parsedDate = new Date(dob);
+  if (isNaN(parsedDate.getTime())) {
+    throw new badRequest("Date of birth is invalid.");
+  }
+  const today = new Date();
+  const age = today.getFullYear() - parsedDate.getFullYear();
+  const monthDiff = today.getMonth() - parsedDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < parsedDate.getDate())) {
+    age--; // Adjust age if birthday hasn't occurred yet this year
+  }
+  if (age < 18) {
+    throw new badRequest("User must be at least 18 years old.");
+  }
+};
+
 const validateAge = (age) => {
+  console.log("the age we got here",age)
+  console.log("age type",typeof age)
   if (typeof age != "number") throw new badRequest("age is not valid");
   if (!age) throw new badRequest("age is empty");
 
@@ -56,4 +86,4 @@ const validateAmount = (amount) => {
 };
 
 
-module.exports = { validateAge, validateFirstName, validateLastName , validateBankName,validateAbbreviation, validateAccountType,validateAmount,validateParameter};
+module.exports = { validateAge, validateFirstName, validateLastName ,validateEmail,validateDob, validateBankName,validateAbbreviation, validateAccountType,validateAmount,validateParameter};

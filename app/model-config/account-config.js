@@ -32,6 +32,7 @@ class AccountConfig {
     this.association = {
       passbook: "passbook",
     };
+    
 
     this.filters = {
       id: (val) => {

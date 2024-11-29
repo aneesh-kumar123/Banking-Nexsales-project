@@ -1,7 +1,6 @@
-const db = require("../../models");
 const { Op } = require("sequelize");
+const db = require("../../models");
 const { validateUUID } = require("../utils/uuid");
-
 
 class UserConfig {
   constructor() {
@@ -12,7 +11,9 @@ class UserConfig {
       fullName: "fullName",
       username: "username",
       password: "password",
-      age: "age",
+      email: "email",
+      dateOfBirth: "dateOfBirth",
+      kycStatus: "kycStatus",
       isAdmin: "isAdmin",
       createdAt: "createdAt",
       updatedAt: "updatedAt",
@@ -26,10 +27,14 @@ class UserConfig {
       firstName: this.model.rawAttributes[this.fieldMapping.firstName].field,
       lastName: this.model.rawAttributes[this.fieldMapping.lastName].field,
       fullName: this.model.rawAttributes[this.fieldMapping.fullName].field,
-      age: this.model.rawAttributes[this.fieldMapping.age].field,
+
       isAdmin: this.model.rawAttributes[this.fieldMapping.isAdmin].field,
       username: this.model.rawAttributes[this.fieldMapping.username].field,
       password: this.model.rawAttributes[this.fieldMapping.password].field,
+      email: this.model.rawAttributes[this.fieldMapping.email].field,
+      dateOfBirth:
+        this.model.rawAttributes[this.fieldMapping.dateOfBirth].field,
+      kycStatus: this.model.rawAttributes[this.fieldMapping.kycStatus].field,
 
       createdAt: this.model.rawAttributes[this.fieldMapping.createdAt].field,
       updatedAt: this.model.rawAttributes[this.fieldMapping.updatedAt].field,
@@ -45,6 +50,13 @@ class UserConfig {
         validateUUID(val);
         return {
           [`${this.columnMapping.id}`]: {
+            [Op.eq]: val,
+          },
+        };
+      },
+      kycStatus: (val) => {
+        return {
+          [`${this.columnMapping.kycStatus}`]: {
             [Op.eq]: val,
           },
         };
@@ -89,20 +101,20 @@ class UserConfig {
         };
       },
 
-      fromAge: (val) => {
-        return {
-          [`${this.columnMapping.age}`]: {
-            [Op.gte]: val,
-          },
-        };
-      },
-      toAge: (val) => {
-        return {
-          [`${this.columnMapping.age}`]: {
-            [Op.lte]: val,
-          },
-        };
-      },
+      // fromAge: (val) => {
+      //   return {
+      //     [`${this.columnMapping.age}`]: {
+      //       [Op.gte]: val,
+      //     },
+      //   };
+      // },
+      // toAge: (val) => {
+      //   return {
+      //     [`${this.columnMapping.age}`]: {
+      //       [Op.lte]: val,
+      //     },
+      //   };
+      // },
     };
   }
 }

@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class passbook extends Model {
     /**
@@ -11,18 +9,23 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      passbook.belongsTo(models.account)
+      passbook.belongsTo(models.account, { as: 'Account', foreignKey: 'account_id' }); // Original association
+      passbook.belongsTo(models.account, { as: 'RecipientAccount', foreignKey: 'recipient_account_id' }); // New association
     }
   }
-  passbook.init({
-    transactionType: DataTypes.STRING,
-    amount: DataTypes.NUMERIC,
-    balanceAfter: DataTypes.NUMERIC
-  }, {
-    sequelize,
-    modelName: 'passbook',
-    underscored: true,
-    paranoid:true
-  });
+  passbook.init(
+    {
+      transactionType: DataTypes.STRING,
+      amount: DataTypes.NUMERIC,
+      balanceAfter: DataTypes.NUMERIC,
+      recipientAccountId: DataTypes.UUID,
+    },
+    {
+      sequelize,
+      modelName: 'passbook',
+      underscored: true,
+      paranoid: true,
+    }
+  );
   return passbook;
 };
